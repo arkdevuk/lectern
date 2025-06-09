@@ -1,7 +1,8 @@
+# Use a specific non-root user for security
 FROM node:20-slim
 
-# Install Chromium dependencies
-RUN apt-get update && apt-get install -y \
+# Install Chromium dependencies securely
+RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     fonts-freefont-ttf \
     fonts-liberation \
@@ -31,15 +32,22 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     libxss1 \
     libxtst6 \
-    ca-certificates \
-    --no-install-recommends && \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
+# Create and switch to a non-root user
+RUN groupadd -r appgroup && useradd -m -r -g appgroup appuser
+
 WORKDIR /app
-COPY package.json .
-RUN npm install --production
+
+COPY package.json package-lock.json ./
+RUN npm ci --production
 
 COPY . .
+
+RUN chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE 3000
 
