@@ -41,7 +41,7 @@ RUN groupadd -r appgroup && useradd -m -r -g appgroup appuser
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --production
+RUN npm ci --production && npx puppeteer browsers install chrome
 
 COPY . .
 
